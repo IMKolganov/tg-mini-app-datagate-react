@@ -10,39 +10,46 @@ interface TelegramUser {
   is_bot?: boolean;
   language_code?: string;
   allows_write_to_pm?: boolean;
+  photo_url?: string;
 }
 
 interface TelegramLaunchParams {
   user?: TelegramUser;
-  start_param?: string;
-  query_id?: string;
-  auth_date?: number;
-  hash?: string; // ← теперь необязательное
+  tgWebAppData?: { user?: TelegramUser };
   [key: string]: any;
 }
 
 export default function UserInfoPage() {
   const [user, setUser] = useState<TelegramUser | null>(null);
-  const [rawInitData, setRawInitData] = useState<string>('');
-  const [initDataUnsafe, setInitDataUnsafe] = useState<TelegramLaunchParams | null>(null);
 
   useEffect(() => {
-    const WebApp = window.Telegram?.WebApp;
+    // Read Telegram WebApp if present
+    const WebApp = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : undefined;
 
-    console.log('🟢 Telegram WebApp:', WebApp);
+    // Try to read launch params; fallback for local/dev
+    let params: TelegramLaunchParams | null = null;
+    try {
+      params = retrieveLaunchParams() as TelegramLaunchParams;
+    } catch {
+      params = {
+        user: {
+          id: 0,
+          first_name: 'Local',
+          last_name: 'User',
+          username: 'dev',
+          language_code: 'en',
+          allows_write_to_pm: true,
+          is_bot: false,
+          is_premium: false,
+          photo_url: undefined,
+        },
+      };
+    }
 
-    const params = retrieveLaunchParams() as TelegramLaunchParams;
-    console.log('📦 launchParams:', params);
-
-    setRawInitData(WebApp?.initData || '(empty)');
-    setInitDataUnsafe(params);
-
-    if (params.user?.id) {
-      setUser(params.user);
-      WebApp?.ready?.();
-      WebApp?.expand?.();
-    } else {
-      setUser({
+    // Prefer explicit user, then tgWebAppData.user, then local mock
+    const effectiveUser =
+      params?.user ??
+      params?.tgWebAppData?.user ?? {
         id: 0,
         first_name: 'Local',
         last_name: 'User',
@@ -51,25 +58,66 @@ export default function UserInfoPage() {
         allows_write_to_pm: true,
         is_bot: false,
         is_premium: false,
-      });
+      };
+
+    setUser(effectiveUser);
+
+    // Call Telegram APIs only if really inside Telegram
+    if (WebApp && (effectiveUser?.id ?? 0) !== 0) {
+      try {
+        WebApp.ready?.();
+        WebApp.expand?.();
+      } catch {
+        /* noop */
+      }
     }
   }, []);
 
-  if (!user) return <p>Loading user info...</p>;
+  if (!user) return null;
+
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
+  const premium = user.is_premium ? '✔' : '—';
+  const username = user.username ? `@${user.username}` : '—';
+  const lang = user.language_code ?? '—';
+  const allowsPm = user.allows_write_to_pm ? '✔' : '—';
 
   return (
-    <section>
-      <h2>User Info</h2>
-      <p><strong>First name:</strong> {user.first_name}</p>
-      <p><strong>Last name:</strong> {user.last_name}</p>
-      <p><strong>Username:</strong> @{user.username}</p>
-      <p><strong>User ID:</strong> {user.id}</p>
+    <section
+      style={{
+        maxWidth: 560,
+        margin: '0 auto',
+        padding: '16px 12px',
+      }}
+    >
+      <h2 style={{ margin: '0 0 12px 0' }}>User Info</h2>
 
-      <hr />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '72px 1fr',
+          gap: 12,
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ width: 72, height: 72, borderRadius: 8, overflow: 'hidden', background: '#222' }}>
+          {user.photo_url ? (
+            <img src={user.photo_url} alt="avatar" width={72} height={72} style={{ objectFit: 'cover' }} />
+          ) : null}
+        </div>
 
-      <h3>Debug Info</h3>
-      <pre><strong>initData:</strong> {rawInitData}</pre>
-      <pre><strong>launchParams:</strong> {JSON.stringify(initDataUnsafe, null, 2)}</pre>
+        <div style={{ display: 'grid', gap: 6 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.2 }}>{fullName || '—'}</div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 14, opacity: 0.9 }}>
+            <span>Username: {username}</span>
+            <span>User ID: {user.id}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 14, opacity: 0.9 }}>
+            <span>Language: {lang}</span>
+            <span>Premium: {premium}</span>
+            <span>Allows PM: {allowsPm}</span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
