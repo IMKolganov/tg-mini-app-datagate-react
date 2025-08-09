@@ -21,12 +21,11 @@ interface TelegramLaunchParams {
 
 export default function UserInfoPage() {
   const [user, setUser] = useState<TelegramUser | null>(null);
+  const [launchParams, setLaunchParams] = useState<TelegramLaunchParams | null>(null);
 
   useEffect(() => {
-    // Read Telegram WebApp if present
     const WebApp = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : undefined;
 
-    // Try to read launch params; fallback for local/dev
     let params: TelegramLaunchParams | null = null;
     try {
       params = retrieveLaunchParams() as TelegramLaunchParams;
@@ -46,7 +45,8 @@ export default function UserInfoPage() {
       };
     }
 
-    // Prefer explicit user, then tgWebAppData.user, then local mock
+    setLaunchParams(params);
+
     const effectiveUser =
       params?.user ??
       params?.tgWebAppData?.user ?? {
@@ -62,7 +62,6 @@ export default function UserInfoPage() {
 
     setUser(effectiveUser);
 
-    // Call Telegram APIs only if really inside Telegram
     if (WebApp && (effectiveUser?.id ?? 0) !== 0) {
       try {
         WebApp.ready?.();
@@ -82,13 +81,7 @@ export default function UserInfoPage() {
   const allowsPm = user.allows_write_to_pm ? '✔' : '—';
 
   return (
-    <section
-      style={{
-        maxWidth: 560,
-        margin: '0 auto',
-        padding: '16px 12px',
-      }}
-    >
+    <section style={{ maxWidth: 560, margin: '0 auto', padding: '16px 12px' }}>
       <h2 style={{ margin: '0 0 12px 0' }}>User Info</h2>
 
       <div
@@ -118,6 +111,13 @@ export default function UserInfoPage() {
           </div>
         </div>
       </div>
+
+      <hr style={{ margin: '16px 0' }} />
+
+      <h3>All launchParams</h3>
+      <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>
+        {JSON.stringify(launchParams, null, 2)}
+      </pre>
     </section>
   );
 }
