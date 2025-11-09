@@ -114,10 +114,10 @@ export default function UserInfoPage() {
 
       <hr style={{ margin: '16px 0' }} />
 
-      <h3>All launchParams</h3>
+      {/* <h3>All launchParams</h3>
       <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>
         {JSON.stringify(launchParams, null, 2)}
-      </pre>
+      </pre> */}
     </section>
   );
 }
