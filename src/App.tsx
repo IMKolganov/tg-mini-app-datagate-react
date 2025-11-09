@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import UserInfoPage from './pages/UserInfoPage';
 import ServerListPage from './pages/ServerListPage';
 import StatisticsPage from './pages/StatisticsPage';

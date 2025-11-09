@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type OpenVpnServerResponse = {
   id: number;
@@ -9,7 +9,7 @@ type OpenVpnServerResponse = {
 };
 
 export default function ServerListPage() {
-  const [servers, setServers] = useState<OpenVpnServerResponse[]>([
+  const [servers, ] = useState<OpenVpnServerResponse[]>([
     {
       id: 1,
       serverName: 'Cyprus 🇨🇾',
