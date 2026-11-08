@@ -1,4 +1,12 @@
-# React + TypeScript + Vite
+# DataGate Telegram Mini App — Deprecated
+
+> **Status: deprecated / abandoned.** This project is no longer maintained. Development has stopped; no updates, bug fixes, or support are planned.
+
+The source is kept for historical reference. The Telegram client has been removed from the [DataGate Clients](https://github.com/IMKolganov/DataGateClients) umbrella repository. Use one of the maintained DataGate clients listed there.
+
+## Original development notes
+
+### React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
