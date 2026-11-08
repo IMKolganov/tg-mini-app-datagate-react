@@ -21,7 +21,7 @@ interface TelegramLaunchParams {
 
 export default function UserInfoPage() {
   const [user, setUser] = useState<TelegramUser | null>(null);
-  const [launchParams, setLaunchParams] = useState<TelegramLaunchParams | null>(null);
+  const [, setLaunchParams] = useState<TelegramLaunchParams | null>(null);
 
   useEffect(() => {
     const WebApp = typeof window !== 'undefined' ? (window as any).Telegram?.WebApp : undefined;
